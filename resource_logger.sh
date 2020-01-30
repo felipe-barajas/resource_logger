@@ -72,19 +72,30 @@ function show_syntax() {
 #------------------------------------------------------------------------------
 function poll_resources() {
   typeset server=$1
-  typeset formatted_line=''
   typeset timestamp=$(date +'%d%m%y-%H%M%S')
   typeset csv_time=$(date +'%m/%d/%y %H:%M:%S')
   typeset storage_temp_file="resource_logger.$server.$timestamp.storage.temp"
   typeset cpu_temp_file="resource_logger.$server.$timestamp.cpu.temp"
   typeset memory_temp_file="resource_logger.$server.$timestamp.memory.temp"
-  typeset storage_output=''
-  typeset cpu_output=''
-  typeset memory_output=''
+  typeset rc=''
 
   ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server "du -sm ${folder_path} 2>/dev/null" > $storage_temp_file 2>/dev/null
+  rc=$?
+  if [[ $rc != 0 ]]; then
+    echo "WARNING - Command [ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server 'du -sm ${folder_path}'] returned $rc" >> $log
+  fi
+
   ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server "top -bn 1 | head -n 20 2>/dev/null" > $cpu_temp_file 2>/dev/null
+  rc=$?
+  if [[ $rc != 0 ]]; then
+    echo "WARNING - Command [ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server 'top -bn 1 | head -n 20'] returned $rc" >> $log
+  fi
+
   ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server "free 2>/dev/null" > $memory_temp_file 2>/dev/null
+  rc=$?
+  if [[ $rc != 0 ]]; then
+    echo "WARNING - Command [ssh -o BatchMode=yes -o StrictHostKeyChecking=no $server 'free'] returned $rc" >> $log
+  fi
 
   #lock on a file so that only one server logs at a time
   #this is to keep all server related-information lines together
@@ -202,7 +213,6 @@ function abort_handler() {
 #------------------------------------------------------------------------------
 # MAIN
 #------------------------------------------------------------------------------
-
 # setup the abort handler
 trap 'abort_handler' SIGINT
 
@@ -237,7 +247,7 @@ while getopts ":c:s:f:t:m:l:" arg; do
   esac
 done
 
-echo "$(date) Starting execution of resource_logger.sh. Log file is [$log]" | tee -a $log
+echo "$(date) - Starting execution of resource_logger.sh. Log file is [$log]" | tee -a $log
 echo " " #print an empty line for readability
 
 #calculate everything in seconds
@@ -320,7 +330,7 @@ while (( i < max_iterations ))
 do
   time=$(date)
   PIDs=()
-  echo "${time} - Getting folder storage . Iteration $i:" >> $log
+  echo "${time} - Polling Resources. Iteration $i:" >> $log
   for s in ${servers}
   do
     #get server resource information in parallel as seperate threads
@@ -341,4 +351,4 @@ if [[ -e ${lock_file} ]]; then
   rm ${lock_file}
 fi
 
-echo "Ended execution" | tee -a $log
+echo "$(date) - Ended execution" | tee -a $log
