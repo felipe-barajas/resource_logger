@@ -33,8 +33,8 @@ To track the usage of a filesystem path, all servers should have this path in co
   
   |time	|server_node	|folder_size(MB)	|folder_path	|top_cpu_usg	|mem_total	|mem_used	|mem_free	|mem_shared	|mem_cached	|mem_avail|
   |-----|-------------|-----------------|-------------|-------------|-----------|---------|---------|-----------|-----------|---------|
-  |1/29/2020 17:36	|sm124	|1	|/dataa/yarn/logs	|15	|131450436	|7416064	|122293336	|129064	|1741036	|122932628|
+  |1/29/2020 17:36:00	|sm124	|1	|/dataa/yarn/logs	|15	|131450436	|7416064	|122293336	|129064	|1741036	|122932628|
 
-  There will also be a log file (default is name is resource_logger.log) which contains additional debug information as well as the raw SSH output data
+  There will also be a log file (default name is resource_logger.log) which contains additional debug information as well as the raw SSH output data
   
  
